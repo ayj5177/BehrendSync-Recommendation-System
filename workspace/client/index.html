@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en" ng-app>
+  <head>
+    <title>Club Recommendation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/css/bootstrap-responsive.min.css">
+    <link rel="shortcut icon" href="http://example.com/myicon.ico">
+        <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/jquery.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/angular.min.js"></script>
+    <style>
+      body {
+        padding-top: 60px;
+      }
+    </style>
+    <div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = 'https://connect.facebook.net/en_GB/sdk.js#xfbml=1&version=v2.11&appId=236772990193074';
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));</script>
+    
+    <script src="jquery-3.2.1.min.js"></script>
+    <script>window.twttr = (function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0],
+    t = window.twttr || {};
+  if (d.getElementById(id)) return t;
+  js = d.createElement(s);
+  js.id = id;
+  js.src = "https://platform.twitter.com/widgets.js";
+  fjs.parentNode.insertBefore(js, fjs);
+
+  t._e = [];
+  t.ready = function(f) {
+    t._e.push(f);
+  };
+
+  return t;
+}(document, "script", "twitter-wjs"));</script>
+    
+    <script>
+      function ChatController($scope) {
+        var socket = io.connect();
+
+        $scope.messages = [];
+        $scope.roster = [];
+        $scope.name = '';
+        $scope.text = '';
+
+        socket.on('connect', function () {
+          $scope.setName();
+        });
+
+        socket.on('message', function (msg) {
+          console.log(msg);
+          $scope.messages.push(msg);
+          $scope.$apply();
+        });
+
+        socket.on('roster', function (names) {
+          $scope.roster = names;
+          $scope.$apply();
+        });
+
+        $scope.sendAboutMe = function sendAboutMe() {
+          console.log('Sending message:', $scope.text);
+          socket.emit('message', $scope.text);
+          $scope.text = '';
+        };
+
+        $scope.setName = function setName() {
+          socket.emit('identify', $scope.name);
+        };
+        
+          socket.on('buildField', function(msg)
+          {
+            //build "you may be interested in" div - called once before queries
+          }); 
+        
+          socket.on('sendClubs', function(msg)
+          {
+            //code to create new HTML elements goes here, we pull the data we put in as msg.[arrayElementName]. Can style using whatever CSS you like
+            // moved HTML to static portion down below --- only thing we need to do here is add a div element containing the result from msg i believe
+            document.getElementById("results").innerHTML="";
+            var destination = document.getElementById("results");
+            var div = document.createElement("P");
+            var checkDiv = document.getElementById("results");
+            if(checkDiv)
+            div.innerHTML = msg.suggestion;
+            var text = div.textContent || div.innerText || "";
+            if(div.innerHTML != 'undefined' && !($(".destination").find(".fail").length > 0))
+            {
+            destination.appendChild(div);
+            }
+            //create dummy div for no club result
+            else
+            {
+              var dummy = document.createElement("P");
+              dummy.innerHTML = "Sorry, we weren't able to find any clubs for you. However, Penn State Behrend has a very easy club creation system, which can be found in the new BehrendSync client.";
+              div.setAttribute("class", "fail");
+              destination.appendChild(dummy);
+            }
+          });
+          
+          
+        
+      }
+    </script>
+  </head>
+  <body>
+    <div class="container" ng-controller="ChatController">
+      <div class="navbar navbar-fixed-top navbar-inverse">
+        <div class="navbar-inner">
+          <div class="pull-right">
+            <a href="https://c9.io" class="brand">Cloud9 IDE</a>
+          </div>
+        </div>
+      </div>
+      <div class="page-header text-center">
+        <h1>BehrendSync Club & Organization Recommendation Feature</h1>
+      </div>
+      <div class="row">
+        <div class="span3 text-center">
+         <h2>Log in with Facebook/Twitter!</h2>
+         <br>
+         <fb:login-button scope="public_profile,email">Try it with Facebook!</fb:login-button><p>Under Construction</p>
+         <br><br>
+          <p> Twitter Functionality To Be Implemented Later: </p>
+        </div>
+        <div class="span6 text-center">
+          <h3>Enter 'About Me' Info!</h3>
+          <div class="row controls">
+            <form ng-submit="sendAboutMe()">
+              <div class="input-append span6">
+                <textarea type="text" class="span6" ng-model="text" placeholder="Enter About Me Here..." rows="15" cols="100"></textarea>
+                <div class="text-center">
+                <button type="submit" class="btn btn-primary" ng-disabled="!text">Find Clubs!</button>
+                </div>
+              </divv>
+            </div>
+          </div>
+        </div>
+        <div class="pull-right" id="clubHolder">
+          <div class="text-center">
+            <h3>Results</h3>
+            </div>
+              <div id="results" class="row span3 pull-right" width="100px" height="100px">
+              </div>
+            </div>
+      </div>
+    </div>
+  </body>
+</html>
+<style>
+  .#clubHolder{
+    overflow: auto
+    height: 300px;
+    width: 300px;
+  }
+</style>
